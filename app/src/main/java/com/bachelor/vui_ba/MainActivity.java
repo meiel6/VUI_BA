@@ -8,7 +8,6 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -17,12 +16,14 @@ import com.nuance.speechanywhere.SessionEventListener;
 import com.nuance.speechanywhere.VuiController;
 import com.nuance.speechanywhere.VuiControllerEventListener;
 
+import java.util.Calendar;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements SessionEventListener, VuiControllerEventListener {
     private VuiController theVuiController; // Reference to the VuiController object
     private EditText spokenText;
     private TextView batteryText;
+    private TextView tvDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         init();
         registerOnNuance();
         configNuance();
+        setDate();
         Session.getSharedSession().startRecording();
 
         this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -40,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private void init(){
         spokenText = findViewById(R.id.spokenText);
         batteryText = findViewById(R.id.batteryText);
+        tvDate = findViewById(R.id.tvDate);
+
         spokenText.requestFocus();
         spokenText.setTextIsSelectable(true);
         theVuiController = findViewById(R.id.vuicontroller);
@@ -62,6 +66,18 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
             batteryText.setText(String.valueOf(level) + "%");
         }
     };
+
+    private void setDate(){
+        // Sets the current date
+        Calendar cal = Calendar.getInstance();
+        int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
+        int month = (cal.get(Calendar.MONTH)) + 1;
+        int year = cal.get(Calendar.YEAR);
+        String dayOfMonthString = String.valueOf(dayOfMonth);
+        String monthString = String.valueOf(month);
+        String yearString = String.valueOf(year);
+        tvDate.setText(dayOfMonthString + "." + monthString + "." + yearString);
+    }
 
     // Save recording state across destruction-recreation (for example, on device rotation)
     @Override
