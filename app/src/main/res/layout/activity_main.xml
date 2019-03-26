@@ -24,21 +24,23 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="10"
-                android:inputType="textMultiLine" />
+                android:inputType="textMultiLine"
+                android:minLines="10"
+                android:textSize="18dp"/>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@color/lightgrey"
+            android:background="@color/barColor"
             android:orientation="horizontal"
             android:weightSum="10">
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:orientation="horizontal"
                 android:weightSum="2">
 
@@ -52,12 +54,11 @@
                     app:srcCompat="@drawable/smartphone" />
 
                 <TextView
-                    android:id="@+id/textView2"
+                    android:id="@+id/batteryText"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:text="95%"
+                    android:gravity="left|center_vertical"
                     android:textColor="@color/black"
                     android:textSize="18dp" />
             </LinearLayout>
@@ -65,7 +66,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:orientation="horizontal"
                 android:weightSum="2">
 
@@ -83,7 +84,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="right|center_vertical"
+                    android:gravity="left|right|center_vertical"
                     android:text="78%"
                     android:textColor="@color/black"
                     android:textSize="18dp" />
@@ -110,7 +111,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="5"
+                android:layout_weight="4"
                 android:orientation="vertical">
 
             </LinearLayout>
