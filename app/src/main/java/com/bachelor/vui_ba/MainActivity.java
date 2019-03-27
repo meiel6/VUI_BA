@@ -93,6 +93,13 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         super.onStart();
     }
 
+//    @Override
+//    protected void onResume(){
+//        super.onResume();
+//        theVuiController.synchronize();
+//        Session.getSharedSession().startRecording();
+//    }
+
     @Override
     protected void onStop() {
         // When the Activity stops, unregister for session event callbacks
