@@ -8,6 +8,7 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
         spokenText.requestFocus();
         spokenText.setTextIsSelectable(true);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         theVuiController = findViewById(R.id.vuicontroller);
     }
 
