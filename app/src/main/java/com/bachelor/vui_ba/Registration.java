@@ -17,7 +17,7 @@ public class Registration {
     // usually will not need to be changed.
     private String partnerToken = "a76110e5-2bad-4b54-9abf-8a3b15619e66";
 
-    private static final String userId = "bachelorthesis";
+    private static final String userId = "bachelorarbeit";
 
     public void openNuanceSession() {
         // Open the session by supplying the given user name, the proper credentials and the application's name

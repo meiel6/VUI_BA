@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements SessionEventListener, VuiControllerEventListener {
     private VuiController theVuiController; // Reference to the VuiController object
+    private boolean recording_flag = false;
     private EditText spokenText;
     private TextView batteryText;
     private TextView tvDate;
@@ -35,7 +37,10 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         registerOnNuance();
         configNuance();
         setDate();
-        Session.getSharedSession().startRecording();
+
+        if ((savedInstanceState != null) && (savedInstanceState.containsKey("recording"))) {
+            recording_flag = savedInstanceState.getBoolean("recording");
+        }
 
         this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
     }
@@ -95,12 +100,12 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         super.onStart();
     }
 
-//    @Override
-//    protected void onResume(){
-//        super.onResume();
-//        theVuiController.synchronize();
-//        Session.getSharedSession().startRecording();
-//    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        theVuiController.synchronize();
+        Session.getSharedSession().startRecording();
+    }
 
     @Override
     protected void onStop() {
@@ -125,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onRecordingStopped() {
-
+        onResume();
     }
 
     @Override
@@ -140,12 +145,12 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onProcessingStarted(View view) {
-
+        recording_flag = true;
     }
 
     @Override
     public void onProcessingFinished(View view) {
-
+        recording_flag = false;
     }
 
     @Override
