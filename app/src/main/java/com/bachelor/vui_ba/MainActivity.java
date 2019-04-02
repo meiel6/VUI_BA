@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,9 @@ import com.nuance.speechanywhere.SessionEventListener;
 import com.nuance.speechanywhere.VuiController;
 import com.nuance.speechanywhere.VuiControllerEventListener;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -27,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private EditText spokenText;
     private TextView batteryText;
     private TextView tvDate;
+    private final String ip_address = "147.87.16.79";
+    private final int port = 6000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -123,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     }
 
 
-        @Override
+    @Override
     public void onRecordingStarted() {
 
     }
@@ -151,10 +157,36 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     @Override
     public void onProcessingFinished(View view) {
         recording_flag = false;
+        Log.d("onProcessingFinished", "onProcessingFinished");
+        Log.d("onProcessingFinished", spokenText.getText().toString());
+        BackgroundTask bt = new BackgroundTask();
+        bt.execute();
     }
 
     @Override
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
 
+    }
+
+    class BackgroundTask extends AsyncTask<String, Void, Void> {
+
+        Socket s;
+        DataOutputStream dos;
+
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            try {
+                s = new Socket(ip_address, port);
+                dos = new DataOutputStream(s.getOutputStream());
+                dos.writeUTF(spokenText.getText().toString());
+
+                dos.close();
+                s.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }
