@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -23,18 +24,23 @@ import com.nuance.speechanywhere.VuiControllerEventListener;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SessionEventListener, VuiControllerEventListener {
     private VuiController theVuiController; // Reference to the VuiController object
     private boolean recording_flag = false;
     private EditText spokenText;
+    private TextView dictatedText;
     private TextView batteryText;
     private TextView tvDate;
     private final String ip_address = "147.87.16.79";
     private final int port = 6000;
     private String tempStr;
+
+    private List<String> dictatedList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -55,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     private void init(){
         spokenText = findViewById(R.id.spokenText);
+        dictatedText = findViewById(R.id.dictatedText);
+        dictatedText.setMovementMethod(new ScrollingMovementMethod());
         batteryText = findViewById(R.id.batteryText);
         tvDate = findViewById(R.id.tvDate);
 
@@ -67,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         startDictationCommandSet.createCommand("startElias", "Elias", "", "Start with Dictation");
         theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
         theVuiController.synchronize();
+
+        dictatedList = new ArrayList<String>();
     }
 
     private void configNuance(){
@@ -167,15 +177,21 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         tempStr = spokenText.getText().toString();
         if (tempStr.contains("Elias")) {
             tempStr = tempStr.replaceAll("Elias", "");
+            //dictatedText.setText(tempStr);
+            dictatedList.add(tempStr);
+            Log.d("dictatedList", dictatedList + "");
+
+            dictatedText.setText("");
+            for (String el : dictatedList) {
+                dictatedText.setText(dictatedText.getText() + el + "\n");
+            }
+
             BackgroundTask bt = new BackgroundTask();
             bt.execute();
         }
 
         Log.d("onProcessingFinished", spokenText.getText().toString());
-        //spokenText.append("\n");
         spokenText.setText("");
-        // BackgroundTask bt = new BackgroundTask();
-        // bt.execute();
     }
 
     @Override

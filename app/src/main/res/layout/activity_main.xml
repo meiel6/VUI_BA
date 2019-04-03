@@ -16,18 +16,30 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="9"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:weightSum="20">
+
+            <TextView
+                android:id="@+id/dictatedText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_weight="18"
+                android:textColor="@color/black"
+                android:textSize="28dp"
+                android:gravity="bottom"/>
 
             <EditText
                 android:id="@+id/spokenText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
                 android:ems="10"
                 android:inputType="textMultiLine"
-                android:minLines="10"
+                android:minLines="1"
                 android:textSize="28dp" />
         </LinearLayout>
 
