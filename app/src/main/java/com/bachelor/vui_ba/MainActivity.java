@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.nuance.speechanywhere.CommandSet;
 import com.nuance.speechanywhere.Session;
 import com.nuance.speechanywhere.SessionEventListener;
 import com.nuance.speechanywhere.VuiController;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private TextView tvDate;
     private final String ip_address = "147.87.16.79";
     private final int port = 6000;
+    private String tempStr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -60,6 +62,11 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         spokenText.setTextIsSelectable(true);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         theVuiController = findViewById(R.id.vuicontroller);
+
+        CommandSet startDictationCommandSet = new CommandSet("Start with Dictation", "By using this command, you will start dictating");
+        startDictationCommandSet.createCommand("startElias", "Elias", "", "Start with Dictation");
+        theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
+        theVuiController.synchronize();
     }
 
     private void configNuance(){
@@ -146,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onProcessingFinished() {
-
+        System.out.println("test");
     }
 
     @Override
@@ -157,15 +164,27 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     @Override
     public void onProcessingFinished(View view) {
         recording_flag = false;
-        Log.d("onProcessingFinished", "onProcessingFinished");
+        tempStr = spokenText.getText().toString();
+        if (tempStr.contains("Elias")) {
+            tempStr = tempStr.replaceAll("Elias", "");
+            BackgroundTask bt = new BackgroundTask();
+            bt.execute();
+        }
+
         Log.d("onProcessingFinished", spokenText.getText().toString());
-        BackgroundTask bt = new BackgroundTask();
-        bt.execute();
+        //spokenText.append("\n");
+        spokenText.setText("");
+        // BackgroundTask bt = new BackgroundTask();
+        // bt.execute();
     }
 
     @Override
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
-
+        if (s.equals("startElias")){
+            spokenText.append("Elias");
+            //BackgroundTask bt = new BackgroundTask();
+            //bt.execute();
+        }
     }
 
     class BackgroundTask extends AsyncTask<String, Void, Void> {
@@ -179,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
             try {
                 s = new Socket(ip_address, port);
                 dos = new DataOutputStream(s.getOutputStream());
-                dos.writeUTF(spokenText.getText().toString());
+                dos.writeUTF(tempStr);
 
                 dos.close();
                 s.close();
