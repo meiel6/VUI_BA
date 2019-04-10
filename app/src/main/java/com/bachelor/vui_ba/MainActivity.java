@@ -4,12 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -21,26 +19,23 @@ import com.nuance.speechanywhere.SessionEventListener;
 import com.nuance.speechanywhere.VuiController;
 import com.nuance.speechanywhere.VuiControllerEventListener;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SessionEventListener, VuiControllerEventListener {
-    private VuiController theVuiController; // Reference to the VuiController object
+
+    private VuiController theVuiController;
+
     private boolean recording_flag = false;
     private EditText spokenText;
     private TextView dictatedText;
     private TextView batteryText;
     private TextView tvDate;
-    private final String ip_address = "147.87.16.79";
-    private final int port = 6000;
-    private String tempStr;
 
-    private List<String> dictatedList;
+    private boolean isDictatingActive = false;
+    private boolean isDictatingDone = false;
+    private String finalText = "";
+    private int startIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -48,8 +43,11 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         setContentView(R.layout.activity_main);
 
         init();
+        initCommandSets();
+
         registerOnNuance();
         configNuance();
+
         setDate();
 
         if ((savedInstanceState != null) && (savedInstanceState.containsKey("recording"))) {
@@ -59,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
     }
 
+    /**
+     * Initializes all the controls for this UI.
+     */
     private void init(){
         spokenText = findViewById(R.id.spokenText);
         dictatedText = findViewById(R.id.dictatedText);
@@ -70,25 +71,40 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         spokenText.setTextIsSelectable(true);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         theVuiController = findViewById(R.id.vuicontroller);
-
-        CommandSet startDictationCommandSet = new CommandSet("Start with Dictation", "By using this command, you will start dictating");
-        startDictationCommandSet.createCommand("startElias", "Elias", "", "Start with Dictation");
-        theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
-        theVuiController.synchronize();
-
-        dictatedList = new ArrayList<String>();
     }
 
+    /**
+     * Initializes the individual designed command sets used for the Nuance speech recognition.
+     */
+    private void initCommandSets(){
+        CommandSet startDictationCommandSet = new CommandSet("Start with Dictation", "By using this command, you will start dictating");
+        startDictationCommandSet.createCommand("startElias", "Ok Elias", "", "Start with Dictation");
+        startDictationCommandSet.createCommand("stopElias", "Stop Elias", "", "Stop with Dictation");
+        theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
+        theVuiController.synchronize();
+    }
+
+    /**
+     * Configure parameter for Nuance.
+     * - "GeneralMedicine" = Vocabulary of common medical words and phrases,
+     * - "DE" = German Language.
+     */
     private void configNuance(){
         theVuiController.setTopic("GeneralMedicine");
         theVuiController.setLanguage("de");
     }
 
+    /**
+     * Register on the Nuance Cloud Server to use speech recognition functionality.
+     */
     private void registerOnNuance(){
         Registration r = new Registration();
         r.openNuanceSession();
     }
 
+    /**
+     * This method is used to receive the battery level of the device and show it to the user.
+     */
     private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver(){
         @Override
         public void onReceive(Context ctxt, Intent intent) {
@@ -97,28 +113,29 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         }
     };
 
+    /**
+     * Sets the current date with day, month and year on the UI.
+     */
     private void setDate(){
-        // Sets the current date
         Calendar cal = Calendar.getInstance();
         int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
         int month = (cal.get(Calendar.MONTH)) + 1;
         int year = cal.get(Calendar.YEAR);
+
         String dayOfMonthString = String.valueOf(dayOfMonth);
         String monthString = String.valueOf(month);
         String yearString = String.valueOf(year);
+
         tvDate.setText(dayOfMonthString + "." + monthString + "." + yearString);
     }
 
-    // Save recording state across destruction-recreation (for example, on device rotation)
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
     }
 
-    // Activity lifecycle callbacks to register and unregister for session event callbacks properly
     @Override
     protected void onStart() {
-        // When the Activity starts (it is already created), register for session event callbacks
         Session.getSharedSession().addSessionEventListener(this);
         super.onStart();
     }
@@ -132,15 +149,12 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     protected void onStop() {
-        // When the Activity stops, unregister for session event callbacks
         Session.getSharedSession().removeSessionEventListener(this);
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        // When the Activity is about to be destroyed, close session.
-        // From the application logic we know that speech recognition is not needed beyond this point.
         if (isFinishing()) Session.getSharedSession().close();
         super.onDestroy();
     }
@@ -148,7 +162,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onRecordingStarted() {
-
     }
 
     @Override
@@ -158,12 +171,10 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onProcessingStarted() {
-
     }
 
     @Override
     public void onProcessingFinished() {
-        System.out.println("test");
     }
 
     @Override
@@ -174,54 +185,48 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     @Override
     public void onProcessingFinished(View view) {
         recording_flag = false;
-        tempStr = spokenText.getText().toString();
-        if (tempStr.contains("Elias")) {
-            tempStr = tempStr.replaceAll("Elias", "");
-            //dictatedText.setText(tempStr);
-            dictatedList.add(tempStr);
-            Log.d("dictatedList", dictatedList + "");
 
-            dictatedText.setText("");
-            for (String el : dictatedList) {
-                dictatedText.setText(dictatedText.getText() + el + "\n");
-            }
+        if(isDictatingActive){
+            String currEditTextContent = spokenText.getText().toString();
+            startIndex = currEditTextContent.indexOf(";");
 
-            BackgroundTask bt = new BackgroundTask();
-            bt.execute();
+            finalText += currEditTextContent.substring(startIndex + 1);
         }
 
-        Log.d("onProcessingFinished", spokenText.getText().toString());
-        spokenText.setText("");
+        if(isDictatingDone){
+            sendToProtocol();
+            flushTextHolder();
+            isDictatingDone = false;
+        }
     }
 
     @Override
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
         if (s.equals("startElias")){
-            spokenText.append("Elias");
-            //BackgroundTask bt = new BackgroundTask();
-            //bt.execute();
+            spokenText.append(";");
+            isDictatingActive = true;
+            isDictatingDone = false;
+        } else if(s.equals("stopElias")){
+            spokenText.append(":");
+            isDictatingActive = false;
+            isDictatingDone = true;
         }
     }
 
-    class BackgroundTask extends AsyncTask<String, Void, Void> {
+    /**
+     * Sends the finaltext, which holds the whole dictate phrase of the user, via TCP-Connection to the ePatientenprotokoll.
+     */
+    private void sendToProtocol(){
+        TCPSender tcps = new TCPSender();
+        tcps.setSpokenText(finalText);
+        tcps.execute();
+    }
 
-        Socket s;
-        DataOutputStream dos;
-
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            try {
-                s = new Socket(ip_address, port);
-                dos = new DataOutputStream(s.getOutputStream());
-                dos.writeUTF(tempStr);
-
-                dos.close();
-                s.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
+    /**
+     * This method cleans the two string placeholder when the command is sent to the ePatientenprotokoll.
+     */
+    private void flushTextHolder(){
+        spokenText.setText("");
+        finalText = "";
     }
 }
