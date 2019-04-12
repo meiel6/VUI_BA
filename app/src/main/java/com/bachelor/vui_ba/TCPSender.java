@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 
 /**
@@ -16,15 +17,21 @@ public class TCPSender extends AsyncTask<String, Void, Void> {
     //Connection
     private Socket s;
     private DataOutputStream dos;
-    private static final String ip_address = "192.168.1.129";               // This needs to be generic --> Maybe WIFI Framework from Android?
-    private static final int port = 6000;                                   // This needs to be generic --> Maybe WIFI Framework from Android?
+    private String ip_address;
+    private int port;
 
     //Payload
     private String spokenText = "";
 
+    public TCPSender(String ip, int port){
+        this.ip_address = ip;
+        this.port = port;
+    }
+
     @Override
     protected Void doInBackground(String... strings) {
         try {
+
             s = new Socket(ip_address, port);
             dos = new DataOutputStream(s.getOutputStream());
             dos.writeUTF(getPayload());

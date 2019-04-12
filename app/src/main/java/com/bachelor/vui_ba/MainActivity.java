@@ -19,6 +19,7 @@ import com.nuance.speechanywhere.SessionEventListener;
 import com.nuance.speechanywhere.VuiController;
 import com.nuance.speechanywhere.VuiControllerEventListener;
 
+import java.net.InetAddress;
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -37,10 +38,17 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private String finalText = "";
     private int startIndex;
 
+    //Connection
+    private int port;
+    private String ip;
+    private WiFiServiceDiscovery wsd;
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        wsd = new WiFiServiceDiscovery(this);
 
         init();
         initCommandSets();
@@ -217,7 +225,10 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
      * Sends the finaltext, which holds the whole dictate phrase of the user, via TCP-Connection to the ePatientenprotokoll.
      */
     private void sendToProtocol(){
-        TCPSender tcps = new TCPSender();
+        this.ip = wsd.getDiscoveredIp();
+        this.port = wsd.getDiscoveredPort();
+
+        TCPSender tcps = new TCPSender(ip, port);
         tcps.setSpokenText(finalText);
         tcps.execute();
     }
