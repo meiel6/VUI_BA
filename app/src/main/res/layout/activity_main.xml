@@ -40,7 +40,9 @@
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
                     android:layout_weight="18"
+                    android:fadeScrollbars="false"
                     android:gravity="bottom"
+                    android:isScrollContainer="false"
                     android:textColor="@color/black"
                     android:textSize="28dp" />
 

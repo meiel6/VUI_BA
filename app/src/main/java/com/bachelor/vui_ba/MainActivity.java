@@ -217,13 +217,48 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
         if (s.equals("startElias")){
             spokenText.append(";");
+
             isDictatingActive = true;
             isDictatingDone = false;
+
         } else if(s.equals("stopElias")){
             spokenText.append(":");
+
+            if(isDictatingActive){
+                writeToHistory();
+            }
+
             isDictatingActive = false;
             isDictatingDone = true;
         }
+    }
+
+    /**
+     * Writes the spoken, final text to the History to stay visible for the user.
+     */
+    private void writeToHistory(){
+        String newHistoryEntry = removeTags(finalText);
+
+        if(!dictatedText.getText().toString().equals("")){
+            String alreadyDictatedText = dictatedText.getText().toString();
+            alreadyDictatedText += "\n";
+            alreadyDictatedText += newHistoryEntry;
+            dictatedText.setText(alreadyDictatedText);
+        } else {
+            dictatedText.setText(newHistoryEntry);
+        }
+    }
+
+    /**
+     * Removes all semicolons and points in the text which are to split the spoken text into parts.
+     * @param text - the spoken, final text
+     * @return cleaned text
+     */
+    private String removeTags(String text){
+        text = text.replace(";", "");
+        text = text.replace(":", "");
+
+        return text;
     }
 
     /**
