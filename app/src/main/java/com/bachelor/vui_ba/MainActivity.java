@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
             String currEditTextContent = spokenText.getText().toString();
             startIndex = currEditTextContent.indexOf(";");
 
-            finalText += currEditTextContent.substring(startIndex + 1);
+            finalText = currEditTextContent.substring(startIndex + 1);
         }
 
         if(isDictatingDone){
