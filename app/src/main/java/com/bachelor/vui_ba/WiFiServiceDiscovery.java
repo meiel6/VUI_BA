@@ -4,9 +4,6 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-
 /**
  * This Class represents the WiFiServiceDiscovery functionality. It is used to discover the service
  * from the ePatienteprotokoll in the local WLAN. If a service with the Name "_speechreceiver._tcp"
@@ -26,7 +23,7 @@ public class WiFiServiceDiscovery {
     private Context context;
 
     //Const
-    private static final String SERVICE_TYPE = "_speechreceiver._tcp";
+    private static final String SERVICE_TYPE = "_nuance._tcp.";
 
     public WiFiServiceDiscovery(Context ctx){
         this.context = ctx;
