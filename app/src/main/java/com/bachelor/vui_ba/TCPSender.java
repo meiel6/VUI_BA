@@ -94,7 +94,9 @@ public class TCPSender extends AsyncTask<String, Void, Void> {
             component = "Puls";
         } else if(spokenText.contains("Blutdruck")) {
             component = "Blutdruck";
-        } else if(spokenText.contains("Medikament")) {
+        } else if(spokenText.contains("Medikament") || spokenText.contains("Adrenalin")
+                || spokenText.contains("Glukose") || spokenText.contains("Glucose")
+                || spokenText.contains("Fentanyl")){
             component = "Medikament";
         }
 
