@@ -17,7 +17,11 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
- * This Class is used to send TCP-Messages to the ePatientenprotokoll.
+ * This Class is used to send TCP-Messages to the ePatientenprotokoll. It also logs all the commands
+ * to two different log files (Standard and Backup). If no connection is available to the
+ * ePatienteprotokoll, the VUI loggs all commands in the backup-log. If the connection is active
+ * again, the delta between backup-log and standard-log (with all the commands) will be send to the
+ * ePatienteprotokoll.
  */
 public class TCPSender extends AsyncTask<String, Void, String> {
 
