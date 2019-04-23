@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         this.ip = wsd.getDiscoveredIp();
         this.port = wsd.getDiscoveredPort();
 
-        TCPSender tcps = new TCPSender(ip, port);
+        TCPSender tcps = new TCPSender(ip, port, this.getApplicationContext());
         tcps.setSpokenText(finalText);
         tcps.execute();
     }
