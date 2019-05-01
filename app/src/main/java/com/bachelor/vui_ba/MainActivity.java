@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private EditText spokenText;
     private TextView dictatedText;
     private TextView batteryText;
-    private TextView bluetoothBatteryText;
     private TextView tvDate;
     private Vibrator v;
 
@@ -75,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         dictatedText = findViewById(R.id.dictatedText);
         dictatedText.setMovementMethod(new ScrollingMovementMethod());
         batteryText = findViewById(R.id.batteryText);
-        bluetoothBatteryText = findViewById(R.id.bluetoothBatteryText);
         tvDate = findViewById(R.id.tvDate);
 
 
@@ -204,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
             String currEditTextContent = spokenText.getText().toString();
             startIndex = currEditTextContent.indexOf(";");
 
-            finalText += currEditTextContent.substring(startIndex + 1);
+            finalText = currEditTextContent.substring(startIndex + 1);
 
         }
 
@@ -219,15 +217,50 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
         if (s.equals("startElias")){
             spokenText.append(";");
+
             isDictatingActive = true;
             isDictatingDone = false;
             v.vibrate(1000);
+
         } else if(s.equals("stopElias")){
             spokenText.append(":");
+
+            if(isDictatingActive){
+                writeToHistory();
+            }
+
             isDictatingActive = false;
             isDictatingDone = true;
             v.vibrate(300);
         }
+    }
+
+    /**
+     * Writes the spoken, final text to the History to stay visible for the user.
+     */
+    private void writeToHistory(){
+        String newHistoryEntry = removeTags(finalText);
+
+        if(!dictatedText.getText().toString().equals("")){
+            String alreadyDictatedText = dictatedText.getText().toString();
+            alreadyDictatedText += "\n";
+            alreadyDictatedText += newHistoryEntry;
+            dictatedText.setText(alreadyDictatedText);
+        } else {
+            dictatedText.setText(newHistoryEntry);
+        }
+    }
+
+    /**
+     * Removes all semicolons and points in the text which are to split the spoken text into parts.
+     * @param text - the spoken, final text
+     * @return cleaned text
+     */
+    private String removeTags(String text){
+        text = text.replace(";", "");
+        text = text.replace(":", "");
+
+        return text;
     }
 
     /**
@@ -237,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         this.ip = wsd.getDiscoveredIp();
         this.port = wsd.getDiscoveredPort();
 
-        TCPSender tcps = new TCPSender(ip, port);
+        TCPSender tcps = new TCPSender(ip, port, this.getApplicationContext());
         tcps.setSpokenText(finalText);
         tcps.execute();
     }

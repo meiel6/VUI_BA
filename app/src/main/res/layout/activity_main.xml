@@ -40,9 +40,14 @@
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
                     android:layout_weight="18"
+                    android:enabled="false"
+                    android:fadeScrollbars="false"
                     android:gravity="bottom"
-                    android:textColor="@color/black"
-                    android:textSize="28dp" />
+                    android:isScrollContainer="false"
+                    android:scrollbars="vertical"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="24dp" />
 
                 <EditText
                     android:id="@+id/spokenText"
@@ -54,6 +59,7 @@
                     android:ems="10"
                     android:inputType="textMultiLine"
                     android:minLines="1"
+                    android:textColor="@android:color/black"
                     android:textSize="28dp" />
             </LinearLayout>
 
