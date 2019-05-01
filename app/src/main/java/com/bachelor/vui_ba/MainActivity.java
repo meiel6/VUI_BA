@@ -203,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
             startIndex = currEditTextContent.indexOf(";");
 
             finalText = currEditTextContent.substring(startIndex + 1);
-
         }
 
         if(isDictatingDone){
@@ -217,11 +216,9 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
         if (s.equals("startElias")){
             spokenText.append(";");
-
             isDictatingActive = true;
             isDictatingDone = false;
             v.vibrate(1000);
-
         } else if(s.equals("stopElias")){
             spokenText.append(":");
 
