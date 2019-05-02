@@ -12,6 +12,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuance.speechanywhere.CommandSet;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private VuiController theVuiController;
 
     private boolean recording_flag = false;
+    private boolean dayMode = true;
+    private LinearLayout background;
     private EditText spokenText;
     private TextView dictatedText;
     private TextView batteryText;
@@ -70,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
      * Initializes all the controls for this UI.
      */
     private void init(){
+        background = findViewById(R.id.background);
         spokenText = findViewById(R.id.spokenText);
         dictatedText = findViewById(R.id.dictatedText);
         dictatedText.setMovementMethod(new ScrollingMovementMethod());
@@ -92,6 +96,9 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         CommandSet startDictationCommandSet = new CommandSet("Start with Dictation", "By using this command, you will start dictating");
         startDictationCommandSet.createCommand("startElias", "Ok Elias", "", "Start with Dictation");
         startDictationCommandSet.createCommand("stopElias", "Stop Elias", "", "Stop with Dictation");
+        startDictationCommandSet.createCommand("background", "Hintergrundfarbe", "", "Changes background color");
+        startDictationCommandSet.createCommand("activateTouch", "Berührung aktivieren", "", "Erlaubt dem User, durch das Berühren des Bildschirmes gewisse Handlungen vorzunehmen");
+        startDictationCommandSet.createCommand("deactivateTouch", "Berührung deaktivieren", "", "Deaktiviert jegliche User Interaktionen ");
         theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
         theVuiController.synchronize();
     }
@@ -229,6 +236,25 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
             isDictatingActive = false;
             isDictatingDone = true;
             v.vibrate(300);
+        } else if(s.equals("background")) {
+            if(dayMode) {
+                background.setBackgroundColor(getResources().getColor(R.color.black));
+                dictatedText.setTextColor(getResources().getColor(R.color.darkGrey));
+                spokenText.setTextColor(getResources().getColor(R.color.white));
+                dayMode = false;
+            } else {
+                background.setBackgroundColor(0x00000000);
+                //background.setAlpha(0);
+                dictatedText.setTextColor(getResources().getColor(R.color.black));
+                spokenText.setTextColor(getResources().getColor(R.color.darkGrey));
+                dayMode = true;
+            }
+        } else if(s.equals("activateTouch")) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            v.vibrate(500);
+        } else if (s.equals("deactivateTouch")) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            v.vibrate(500);
         }
     }
 

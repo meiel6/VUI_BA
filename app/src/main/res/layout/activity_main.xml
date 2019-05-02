@@ -26,7 +26,7 @@
             android:weightSum="10">
 
             <LinearLayout
-                android:id="@+id/linearLayout"
+                android:id="@+id/background"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="9"
@@ -46,7 +46,7 @@
                     android:isScrollContainer="false"
                     android:scrollbars="vertical"
                     android:textAlignment="center"
-                    android:textColor="@android:color/darker_gray"
+                    android:textColor="@color/darkGrey"
                     android:textSize="24dp" />
 
                 <EditText
@@ -59,7 +59,7 @@
                     android:ems="10"
                     android:inputType="textMultiLine"
                     android:minLines="1"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/black"
                     android:textSize="28dp" />
             </LinearLayout>
 
