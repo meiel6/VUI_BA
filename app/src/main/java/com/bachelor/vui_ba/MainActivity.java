@@ -4,11 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +14,6 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuance.speechanywhere.CommandSet;
@@ -40,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private TextView dictatedText;
     private TextView batteryText;
     private TextView tvDate;
+    private Vibrator v;
 
     private boolean isDictatingActive = false;
     private boolean isDictatingDone = false;
@@ -119,6 +117,9 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         dictatedText.setMovementMethod(new ScrollingMovementMethod());
         batteryText = findViewById(R.id.batteryText);
         tvDate = findViewById(R.id.tvDate);
+
+
+        v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         spokenText.requestFocus();
         spokenText.setTextIsSelectable(true);
@@ -260,10 +261,9 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
         if (s.equals("startElias")){
             spokenText.append(";");
-
             isDictatingActive = true;
             isDictatingDone = false;
-
+            v.vibrate(1000);
         } else if(s.equals("stopElias")){
             spokenText.append(":");
 
@@ -273,6 +273,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
             isDictatingActive = false;
             isDictatingDone = true;
+            v.vibrate(300);
         }
     }
 
