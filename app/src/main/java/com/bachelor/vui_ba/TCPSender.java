@@ -7,14 +7,19 @@ import android.os.Handler;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 /**
  * This Class is used to send TCP-Messages to the ePatientenprotokoll. It also logs all the commands
@@ -42,9 +47,16 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     //Payload
     private String spokenText = "";
 
-    public TCPSender(String ip, int port, Context ctx){
-        this.ip_address = ip;
-        this.port = port;
+//    public TCPSender(String ip, int port, Context ctx){
+//        this.ip_address = ip;
+//        this.port = port;
+//        this.context = ctx;
+//
+//        initLoggingDirectories();
+//    }
+
+    public TCPSender(Socket socket, Context ctx){
+        this.s = socket;
         this.context = ctx;
 
         initLoggingDirectories();
@@ -61,21 +73,56 @@ public class TCPSender extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... strings) {
+
+        String payload = getPayload();
+
         try {
-            s = new Socket(ip_address, port);
+            //s = new Socket(ip_address, port);
+
+            System.out.println("JAN: payload " + payload);
+
             dos = new DataOutputStream(s.getOutputStream());
 
-            String payload = getPayload();
-            dos.writeUTF(payload);
+            if(backupLog.length() != 0){
+                String[] logList = readBackupLog();
+                for(int i = 0; i < logList.length; ++i){
+                    String backupPayload = invertLogStringToJson(logList[i]);
+                    dos.writeUTF(backupPayload);
+                    writeToStandardLogFile(backupPayload);
+                }
+                clearBackUpLog();
+            } else {
+                dos.writeUTF(payload);
+            }
 
             dos.close();
             s.close();
 
-            incrementId();
-
             return payload;
 
-        } catch (IOException e) {
+        } catch (UnknownHostException e) {
+            System.out.println("JAN: UnknownHostException");
+            writeToBackupLogFile(payload);
+            e.printStackTrace();
+            return null;
+        } catch (IOException e){
+            System.out.println("JAN: IOException");
+            writeToBackupLogFile(payload);
+            e.printStackTrace();
+            return null;
+        } catch (IllegalArgumentException e){
+            System.out.println("JAN: IllegalArgumentException");
+            writeToBackupLogFile(payload);
+            e.printStackTrace();
+            return null;
+        } catch (SecurityException e){
+            System.out.println("JAN: SecurityException");
+            writeToBackupLogFile(payload);
+            e.printStackTrace();
+            return null;
+        } catch (Exception e) {
+            System.out.println("JAN: Exception");
+            writeToBackupLogFile(payload);
             e.printStackTrace();
             return null;
         }
@@ -84,7 +131,9 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String payload) {
         super.onPostExecute(payload);
-        writeToStandardLogFile(payload);
+        if(payload != null){
+            writeToStandardLogFile(payload);
+        }
     }
 
     public void setSpokenText(String text){
@@ -127,17 +176,18 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private String getComponent(){
         String component = null;
 
-        if(spokenText.contains("Anamnese")) {
+        if(spokenText.contains("Anamnese") || spokenText.contains("Anamnèse")) {
             component = "Anamnese";
         } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("Coma")) {        //maybe there are some additions needed
             component = "GCS";
         } else if(spokenText.contains("Lagerung")) {
             component = "Lagerung";
-        } else if(spokenText.contains("Puls")) {
+        } else if(spokenText.contains("Puls") || spokenText.contains("Pulse")) {
             component = "Puls";
-        } else if(spokenText.contains("Blutdruck")) {
+        } else if(spokenText.contains("Blutdruck") || spokenText.contains("tension artérielle")) {
             component = "Blutdruck";
-        } else if(spokenText.contains("Medikament") || spokenText.contains("Adrenalin")
+        } else if(spokenText.contains("Medikament") || spokenText.contains("drogue") || spokenText.contains("médicament")
+                || spokenText.contains("Adrenalin") || spokenText.contains("Adrénaline")
                 || spokenText.contains("Glukose") || spokenText.contains("Glucose")
                 || spokenText.contains("Fentanyl")){
             component = "Medikament";
@@ -162,7 +212,28 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private void writeToStandardLogFile(String payload){
         try {
             fos = new FileOutputStream(standardLog, true);
+            incrementId();
+            fos.write(buildLogString(payload).getBytes());
+            fos.write("\r\n".getBytes());
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    /**
+     * Writes the backup log. EVERY command that is created AFTER OR DURING a connection issue is logged
+     * in this file.
+     *
+     * @param payload - the spoken text
+     */
+    private void writeToBackupLogFile(String payload){
+        try {
+            System.out.println("JAN: write a backup");
+            fos = new FileOutputStream(backupLog, true);
+            incrementId();
             fos.write(buildLogString(payload).getBytes());
             fos.write("\r\n".getBytes());
             fos.close();
@@ -203,5 +274,66 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private JsonObject getJson(String payload){
         JsonParser parser = new JsonParser();
         return (JsonObject) parser.parse(payload);
+    }
+
+    /**
+     * Read all lines from the backup.txt file on the internal storage. The Variable logs contains
+     * all logs who were in the backup.txt file after executing this method.
+     *
+     * @return String[] with log lines
+     */
+    private String[] readBackupLog(){
+        StringBuilder logs = new StringBuilder();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(backupLog));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                logs.append(line);
+                logs.append('\n');
+            }
+            br.close();
+
+            return logs.toString().split("\n");
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * This method inverts the LogString from the XX|XX|XX|XX-Form in a Json-Form and converts it
+     * to a string.
+     *
+     * @param log - one row of the backup log
+     * @return Log in json as a String
+     */
+    private String invertLogStringToJson(String log){
+
+        JsonObject json = new JsonObject();
+        System.out.println("Das ist eine Log Zeile: " + log);
+        String[] logParts = log.split("|");
+
+        json.addProperty("id", logParts[0]);
+        json.addProperty("ts", logParts[1]);
+        json.addProperty("comp", logParts[2]);
+        json.addProperty("payload", logParts[3]);
+
+        return json.toString();
+    }
+
+    /**
+     * Deletes all entries from the backup file.
+     */
+    private void clearBackUpLog(){
+        try {
+            new PrintWriter(backupLog).close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
