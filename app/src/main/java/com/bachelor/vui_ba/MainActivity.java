@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -21,6 +23,9 @@ import com.nuance.speechanywhere.SessionEventListener;
 import com.nuance.speechanywhere.VuiController;
 import com.nuance.speechanywhere.VuiControllerEventListener;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -41,18 +46,22 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     private boolean isDictatingDone = false;
     private String finalText = "";
     private int startIndex;
+    private static Context context;
 
     //Connection
     private int port;
     private String ip;
-    private WiFiServiceDiscovery wsd;
+    private static WiFiServiceDiscovery wsd;
+    private TCPSender tcps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        context = this;
 
-        wsd = new WiFiServiceDiscovery(this);
+//        startWiFiCheckerService();
+        openWiFiDiscovery();
 
         init();
         initCommandSets();
@@ -67,6 +76,39 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         }
 
         this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    }
+
+    /**
+     * Creates a new instance from WiFiServiceDiscovery to discover the open Sub-Wlan from the
+     * ePatientenprotokoll.
+     */
+    public static void openWiFiDiscovery(){
+        wsd = new WiFiServiceDiscovery(context);
+    }
+
+    /**
+     * Creates a background service that checks the wifi state of the user device.
+     */
+    private void startWiFiCheckerService(){
+        startService(new Intent(this, WiFiCheckerService.class));
+    }
+
+    private void openTCPConnection(final String finalText){
+        //tcps = new TCPSender(ip, port, this.getApplicationContext());
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Socket s = new Socket(ip, port);
+                        tcps = new TCPSender(s, context);
+                        tcps.setSpokenText(finalText);
+                        tcps.execute();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        thread.start();
     }
 
     /**
@@ -213,6 +255,9 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         }
 
         if(isDictatingDone){
+            this.ip = wsd.getDiscoveredIp();
+            this.port = wsd.getDiscoveredPort();
+
             sendToProtocol();
             flushTextHolder();
             isDictatingDone = false;
@@ -290,12 +335,13 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
      * Sends the finaltext, which holds the whole dictate phrase of the user, via TCP-Connection to the ePatientenprotokoll.
      */
     private void sendToProtocol(){
-        this.ip = wsd.getDiscoveredIp();
-        this.port = wsd.getDiscoveredPort();
+//        this.ip = wsd.getDiscoveredIp();
+//        this.port = wsd.getDiscoveredPort();
+        openTCPConnection(finalText);
 
-        TCPSender tcps = new TCPSender(ip, port, this.getApplicationContext());
-        tcps.setSpokenText(finalText);
-        tcps.execute();
+        //TCPSender tcps = new TCPSender(ip, port, this.getApplicationContext());
+//        tcps.setSpokenText(finalText);
+//        tcps.execute();
     }
 
     /**
@@ -305,4 +351,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         spokenText.setText("");
         finalText = "";
     }
+
+
 }
