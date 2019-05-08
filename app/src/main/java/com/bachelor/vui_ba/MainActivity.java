@@ -7,8 +7,6 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -24,7 +22,6 @@ import com.nuance.speechanywhere.VuiController;
 import com.nuance.speechanywhere.VuiControllerEventListener;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -139,8 +136,10 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         startDictationCommandSet.createCommand("startElias", "Ok Elias", "", "Start with Dictation");
         startDictationCommandSet.createCommand("stopElias", "Stop Elias", "", "Stop with Dictation");
         startDictationCommandSet.createCommand("background", "Hintergrundfarbe", "", "Changes background color");
-        startDictationCommandSet.createCommand("activateTouch", "Berührung aktivieren", "", "Erlaubt dem User, durch das Berühren des Bildschirmes gewisse Handlungen vorzunehmen");
-        startDictationCommandSet.createCommand("deactivateTouch", "Berührung deaktivieren", "", "Deaktiviert jegliche User Interaktionen ");
+        startDictationCommandSet.createCommand("activateTouch", "Berührung aktivieren", "", "Activates user touch and interactions");
+        startDictationCommandSet.createCommand("deactivateTouch", "Berührung deaktivieren", "", "Deactivates user touch and interactions");
+        startDictationCommandSet.createCommand("languageGerman", "Dokumentation in Deutsch", "", "Enables the user to document in the German language");
+        startDictationCommandSet.createCommand("languageFrench", "Documentation en Français", "", "Enabkes the user to document in the French language");
         theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
         theVuiController.synchronize();
     }
@@ -300,6 +299,10 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         } else if (s.equals("deactivateTouch")) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             v.vibrate(500);
+        } else if (s.equals("languageGerman")) {
+            theVuiController.setLanguage("de");
+        } else if (s.equals("languageFrench")) {
+            theVuiController.setLanguage("fr");
         }
     }
 
