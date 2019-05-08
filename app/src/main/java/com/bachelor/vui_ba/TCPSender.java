@@ -79,8 +79,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
         try {
             //s = new Socket(ip_address, port);
 
-            System.out.println("JAN: payload " + payload);
-
             dos = new DataOutputStream(s.getOutputStream());
 
             if(backupLog.length() != 0){
@@ -157,7 +155,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
 
         if(spokenText.contains("Anamnese") || spokenText.contains("Anamnèse")) {
             component = "Anamnese";
-        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("Coma")) {        //maybe there are some additions needed
+        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("Coma")) {
             component = "GCS";
         } else if(spokenText.contains("Lagerung")) {
             component = "Lagerung";
@@ -210,7 +208,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      */
     private void writeToBackupLogFile(String payload){
         try {
-            System.out.println("JAN: write a backup");
             fos = new FileOutputStream(backupLog, true);
             incrementId();
             fos.write(buildLogString(payload).getBytes());
@@ -294,7 +291,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private String invertLogStringToJson(String log){
 
         JsonObject json = new JsonObject();
-        System.out.println("Das ist eine Log Zeile: " + log);
         String[] logParts = log.split("|");
 
         json.addProperty("id", logParts[0]);
