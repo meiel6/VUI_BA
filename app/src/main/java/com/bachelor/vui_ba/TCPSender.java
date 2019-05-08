@@ -100,28 +100,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
 
             return payload;
 
-        } catch (UnknownHostException e) {
-            System.out.println("JAN: UnknownHostException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
-        } catch (IOException e){
-            System.out.println("JAN: IOException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
-        } catch (IllegalArgumentException e){
-            System.out.println("JAN: IllegalArgumentException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
-        } catch (SecurityException e){
-            System.out.println("JAN: SecurityException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
         } catch (Exception e) {
-            System.out.println("JAN: Exception");
             writeToBackupLogFile(payload);
             e.printStackTrace();
             return null;
