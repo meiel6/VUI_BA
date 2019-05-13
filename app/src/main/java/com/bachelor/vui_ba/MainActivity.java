@@ -135,13 +135,19 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         CommandSet startDictationCommandSet = new CommandSet("Start with Dictation", "By using this command, you will start dictating");
         startDictationCommandSet.createCommand("startElias", "Ok Elias", "", "Start with Dictation");
         startDictationCommandSet.createCommand("stopElias", "Stop Elias", "", "Stop with Dictation");
+
         startDictationCommandSet.createCommand("background", "Hintergrundfarbe", "", "Changes background color");
+        startDictationCommandSet.createCommand("background2", "Couleur de fond", "", "Changes background color");
+
         startDictationCommandSet.createCommand("activateTouch", "Berührung aktivieren", "", "Activates user touch and interactions");
+        startDictationCommandSet.createCommand("activateTouch2", "Activer le toucher", "", "Activates user touch and interactions");
         startDictationCommandSet.createCommand("deactivateTouch", "Berührung deaktivieren", "", "Deactivates user touch and interactions");
+        startDictationCommandSet.createCommand("deactivateTouch2", "Deactiver le toucher", "", "Deactivates user touch and interactions");
+
         startDictationCommandSet.createCommand("languageGerman", "Dokumentation in deutsch", "", "Enables the user to document in the German language");
-        startDictationCommandSet.createCommand("languageFrench", "documentation en français", "", "Enabkes the user to document in the French language");
+        startDictationCommandSet.createCommand("languageFrench", "documentation en français", "", "Enables the user to document in the French language");
         startDictationCommandSet.createCommand("languageGerman2", "documentation en allemand", "", "Enables the user to document in the German language");
-        startDictationCommandSet.createCommand("languageFrench2", "Dokumentation in französisch", "", "Enabkes the user to document in the French language");
+        startDictationCommandSet.createCommand("languageFrench2", "Dokumentation in französisch", "", "Enables the user to document in the French language");
         theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
         theVuiController.synchronize();
     }
@@ -287,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
                 v.vibrate(300);
                 break;
             case "background":
+            case "background2":
                 if(dayMode) {
                     background.setBackgroundColor(getResources().getColor(R.color.black));
                     dictatedText.setTextColor(getResources().getColor(R.color.darkGrey));
@@ -300,67 +307,30 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
                 }
                 break;
             case "activateTouch":
+            case "activateTouch2":
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 v.vibrate(500);
                 break;
             case "deactivateTouch":
+            case "deactivateTouch2":
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 v.vibrate(500);
                 break;
             case "languageGerman":
             case "languageGerman2":
                 theVuiController.setLanguage("de");
+                theVuiController.synchronize();
                 finalText = "Dokumentation in Deutsch";
                 sendToProtocol();
                 break;
             case "languageFrench":
             case "languageFrench2":
                 theVuiController.setLanguage("fr");
+                theVuiController.synchronize();
                 finalText = "Dokumentation in Französisch";
                 sendToProtocol();
                 break;
         }
-
-
-//        if (s.equals("startElias")){
-//            spokenText.append(";");
-//            isDictatingActive = true;
-//            isDictatingDone = false;
-//            v.vibrate(1000);
-//        } else if(s.equals("stopElias")){
-//            spokenText.append(":");
-//
-//            if(isDictatingActive){
-//                writeToHistory();
-//            }
-//
-//            isDictatingActive = false;
-//            isDictatingDone = true;
-//            v.vibrate(300);
-//        } else if(s.equals("background")) {
-//            if(dayMode) {
-//                background.setBackgroundColor(getResources().getColor(R.color.black));
-//                dictatedText.setTextColor(getResources().getColor(R.color.darkGrey));
-//                spokenText.setTextColor(getResources().getColor(R.color.white));
-//                dayMode = false;
-//            } else {
-//                background.setBackgroundColor(0x00000000);
-//                //background.setAlpha(0);
-//                dictatedText.setTextColor(getResources().getColor(R.color.black));
-//                spokenText.setTextColor(getResources().getColor(R.color.darkGrey));
-//                dayMode = true;
-//            }
-//        } else if(s.equals("activateTouch")) {
-//            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-//            v.vibrate(500);
-//        } else if (s.equals("deactivateTouch")) {
-//            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-//            v.vibrate(500);
-//        } else if (s.equals("languageGerman")) {
-//            theVuiController.setLanguage("de");
-//        } else if (s.equals("languageFrench")) {
-//            theVuiController.setLanguage("fr");
-//        }
     }
 
     /**
