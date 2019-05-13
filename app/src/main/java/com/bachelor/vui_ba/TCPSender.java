@@ -168,6 +168,8 @@ public class TCPSender extends AsyncTask<String, Void, String> {
                 || spokenText.contains("Glukose") || spokenText.contains("Glucose")
                 || spokenText.contains("Fentanyl")){
             component = "Medikament";
+        } else if(spokenText.contains("Dokumentation")){
+            component = "Dokumentation";
         }
 
         return component;
