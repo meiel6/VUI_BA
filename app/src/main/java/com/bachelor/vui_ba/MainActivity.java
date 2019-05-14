@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         startDictationCommandSet.createCommand("activateTouch", "Berührung aktivieren", "", "Activates user touch and interactions");
         startDictationCommandSet.createCommand("deactivateTouch", "Berührung deaktivieren", "", "Deactivates user touch and interactions");
         startDictationCommandSet.createCommand("languageGerman", "Dokumentation in Deutsch", "", "Enables the user to document in the German language");
-        startDictationCommandSet.createCommand("languageFrench", "Documentation en Français", "", "Enabkes the user to document in the French language");
+        startDictationCommandSet.createCommand("languageFrench", "Dokumentation in Französisch", "", "Enabkes the user to document in the French language");
         theVuiController.assignCommandSets(new CommandSet[]{startDictationCommandSet});
         theVuiController.synchronize();
     }
@@ -148,10 +148,11 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
      * Configure parameter for Nuance.
      * - "GeneralMedicine" = Vocabulary of common medical words and phrases,
      * - "DE" = German Language.
+     * - "FR" = French Language.
      */
     private void configNuance(){
         theVuiController.setTopic("GeneralMedicine");
-        theVuiController.setLanguage("de");
+        theVuiController.setLanguage("fr");
     }
 
     /**
