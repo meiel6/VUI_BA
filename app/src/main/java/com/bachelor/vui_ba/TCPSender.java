@@ -79,8 +79,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
         try {
             //s = new Socket(ip_address, port);
 
-            System.out.println("JAN: payload " + payload);
-
             dos = new DataOutputStream(s.getOutputStream());
 
             if(backupLog.length() != 0){
@@ -100,28 +98,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
 
             return payload;
 
-        } catch (UnknownHostException e) {
-            System.out.println("JAN: UnknownHostException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
-        } catch (IOException e){
-            System.out.println("JAN: IOException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
-        } catch (IllegalArgumentException e){
-            System.out.println("JAN: IllegalArgumentException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
-        } catch (SecurityException e){
-            System.out.println("JAN: SecurityException");
-            writeToBackupLogFile(payload);
-            e.printStackTrace();
-            return null;
         } catch (Exception e) {
-            System.out.println("JAN: Exception");
             writeToBackupLogFile(payload);
             e.printStackTrace();
             return null;
@@ -178,7 +155,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
 
         if(spokenText.contains("Anamnese") || spokenText.contains("Anamnèse")) {
             component = "Anamnese";
-        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("Coma")) {        //maybe there are some additions needed
+        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("Coma")) {
             component = "GCS";
         } else if(spokenText.contains("Lagerung")) {
             component = "Lagerung";
@@ -191,6 +168,8 @@ public class TCPSender extends AsyncTask<String, Void, String> {
                 || spokenText.contains("Glukose") || spokenText.contains("Glucose")
                 || spokenText.contains("Fentanyl")){
             component = "Medikament";
+        } else if(spokenText.contains("Dokumentation")){
+            component = "Dokumentation";
         }
 
         return component;
@@ -231,7 +210,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      */
     private void writeToBackupLogFile(String payload){
         try {
-            System.out.println("JAN: write a backup");
             fos = new FileOutputStream(backupLog, true);
             incrementId();
             fos.write(buildLogString(payload).getBytes());
@@ -315,7 +293,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private String invertLogStringToJson(String log){
 
         JsonObject json = new JsonObject();
-        System.out.println("Das ist eine Log Zeile: " + log);
         String[] logParts = log.split("|");
 
         json.addProperty("id", logParts[0]);

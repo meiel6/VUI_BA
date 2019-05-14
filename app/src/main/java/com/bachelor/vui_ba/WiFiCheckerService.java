@@ -7,11 +7,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
-import android.widget.Toast;
 
 public class WiFiCheckerService extends Service {
 
-    public Context context = this;
     public Handler handler = null;
     public static Runnable runnable = null;
 
@@ -24,8 +22,6 @@ public class WiFiCheckerService extends Service {
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "Service created!", Toast.LENGTH_LONG).show();
-
         handler = new Handler();
         runnable = new Runnable() {
             public void run() {
