@@ -159,7 +159,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
             component = "GCS";
         } else if(spokenText.contains("Lagerung")) {
             component = "Lagerung";
-        } else if(spokenText.contains("Puls") || spokenText.contains("Pulse")) {
+        } else if(spokenText.contains("Puls") || spokenText.contains("Pouls") || spokenText.contains("Battement")) {
             component = "Puls";
         } else if(spokenText.contains("Blutdruck") || spokenText.contains("tension artérielle")) {
             component = "Blutdruck";
@@ -168,7 +168,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
                 || spokenText.contains("Glukose") || spokenText.contains("Glucose")
                 || spokenText.contains("Fentanyl")){
             component = "Medikament";
-        } else if(spokenText.contains("Dokumentation")){
+        } else if(spokenText.contains("Dokumentation") || spokenText.contains("Documentation")){
             component = "Dokumentation";
         }
 
