@@ -151,22 +151,22 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private String getComponent(){
         String component = null;
 
-        if(spokenText.contains("Anamnese") || spokenText.contains("Anamnèse")) {
+        if(spokenText.contains("Anamnese") || spokenText.contains("Anamnèse") || spokenText.contains("anamnèse")) {
             component = "Anamnese";
-        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("Coma")) {
+        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("glasgow") || spokenText.contains("Coma") || spokenText.contains("coma")) {
             component = "GCS";
         } else if(spokenText.contains("Lagerung")) {
             component = "Lagerung";
-        } else if(spokenText.contains("Puls") || spokenText.contains("Pulse")) {
+        } else if(spokenText.contains("Puls") || spokenText.contains("Pouls") || spokenText.contains("pouls") || spokenText.contains("Battement") || spokenText.contains("battement")) {
             component = "Puls";
-        } else if(spokenText.contains("Blutdruck") || spokenText.contains("tension artérielle")) {
+        } else if(spokenText.contains("Blutdruck") || spokenText.contains("tension artérielle") || spokenText.contains("Tension artérielle")) {
             component = "Blutdruck";
-        } else if(spokenText.contains("Medikament") || spokenText.contains("drogue") || spokenText.contains("médicament")
-                || spokenText.contains("Adrenalin") || spokenText.contains("Adrénaline")
-                || spokenText.contains("Glukose") || spokenText.contains("Glucose")
-                || spokenText.contains("Fentanyl")){
+        } else if(spokenText.contains("Medikament") || spokenText.contains("Drogue") || spokenText.contains("drogue") || spokenText.contains("Médicament") || spokenText.contains("médicament")
+                || spokenText.contains("Adrenalin") || spokenText.contains("Adrénaline") || spokenText.contains("adrénaline")
+                || spokenText.contains("Glukose") || spokenText.contains("Glucose") || spokenText.contains("glucose")
+                || spokenText.contains("Fentanyl") || spokenText.contains("fentanyl")) {
             component = "Medikament";
-        } else if(spokenText.contains("Dokumentation")){
+        } else if(spokenText.contains("Dokumentation") || spokenText.contains("Documentation")){
             component = "Dokumentation";
         }
 
