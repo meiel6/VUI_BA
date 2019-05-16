@@ -91,20 +91,27 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     }
 
     private void openTCPConnection(final String finalText){
-        //tcps = new TCPSender(ip, port, this.getApplicationContext());
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Socket s = new Socket(ip, port);
-                        tcps = new TCPSender(s, context);
-                        tcps.setSpokenText(finalText);
-                        tcps.execute();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        System.out.println("JAN: openTCPConnection() started");
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket s = new Socket(ip, port);
+                    tcps = new TCPSender(s, context);
+                    tcps.setSpokenText(finalText);
+                    System.out.println("JAN: openTCPConnection() before execute()");
+                    tcps.execute();
+                } catch (IOException e) {
+                    System.out.println("JAN: openTCPConnection() IOException before TCPSender Creation");
+                    tcps = new TCPSender(context);
+                    tcps.setSpokenText(finalText);
+                    String payload = tcps.getPayload();
+                    System.out.println("JAN: openTCPCOnnection: Backup Payload: " + payload);
+                    tcps.writeToBackupLogFile(payload);
+                    e.printStackTrace();
                 }
-            });
+            }
+        });
         thread.start();
     }
 
@@ -365,13 +372,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
      * Sends the finaltext, which holds the whole dictate phrase of the user, via TCP-Connection to the ePatientenprotokoll.
      */
     private void sendToProtocol(){
-//        this.ip = wsd.getDiscoveredIp();
-//        this.port = wsd.getDiscoveredPort();
         openTCPConnection(finalText);
-
-        //TCPSender tcps = new TCPSender(ip, port, this.getApplicationContext());
-//        tcps.setSpokenText(finalText);
-//        tcps.execute();
     }
 
     /**

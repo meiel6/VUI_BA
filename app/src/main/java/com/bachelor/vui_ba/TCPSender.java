@@ -33,8 +33,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     //Connection
     private Socket s;
     private DataOutputStream dos;
-    private String ip_address;
-    private int port;
     private static int currentId = 0;
     private Context context;
 
@@ -47,18 +45,15 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     //Payload
     private String spokenText = "";
 
-//    public TCPSender(String ip, int port, Context ctx){
-//        this.ip_address = ip;
-//        this.port = port;
-//        this.context = ctx;
-//
-//        initLoggingDirectories();
-//    }
-
     public TCPSender(Socket socket, Context ctx){
         this.s = socket;
         this.context = ctx;
 
+        initLoggingDirectories();
+    }
+
+    public TCPSender(Context ctx){
+        this.context = ctx;
         initLoggingDirectories();
     }
 
@@ -77,28 +72,31 @@ public class TCPSender extends AsyncTask<String, Void, String> {
         String payload = getPayload();
 
         try {
-            //s = new Socket(ip_address, port);
-
             dos = new DataOutputStream(s.getOutputStream());
 
             if(backupLog.length() != 0){
+                System.out.println("JAN: Check --> Backup length is bigger than 0!");
                 String[] logList = readBackupLog();
-                for(int i = 0; i < logList.length; ++i){
+                for(int i = 0; i <= logList.length; ++i){
                     String backupPayload = invertLogStringToJson(logList[i]);
+                    System.out.println("JAN: doInBackground in Backup Loop " + backupPayload);
                     dos.writeUTF(backupPayload);
                     writeToStandardLogFile(backupPayload);
                 }
                 clearBackUpLog();
             } else {
+                System.out.println("JAN: Write --> Normal transmission!");
                 dos.writeUTF(payload);
+                writeToStandardLogFile(payload);
+                dos.close();
             }
-
             dos.close();
             s.close();
 
             return payload;
 
         } catch (Exception e) {
+            System.out.println("JAN: Exception --> No Internet!");
             writeToBackupLogFile(payload);
             e.printStackTrace();
             return null;
@@ -108,9 +106,9 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String payload) {
         super.onPostExecute(payload);
-        if(payload != null){
-            writeToStandardLogFile(payload);
-        }
+//        if(payload != null){
+//            writeToStandardLogFile(payload);
+//        }
     }
 
     public void setSpokenText(String text){
@@ -121,7 +119,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      * This method returns the Json Object in a string representation.
      * @return String of the Json Object
      */
-    private String getPayload(){
+    public String getPayload(){
         return createJson().toString();
     }
 
@@ -208,7 +206,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      *
      * @param payload - the spoken text
      */
-    private void writeToBackupLogFile(String payload){
+    public void writeToBackupLogFile(String payload){
         try {
             fos = new FileOutputStream(backupLog, true);
             incrementId();
@@ -291,9 +289,13 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      * @return Log in json as a String
      */
     private String invertLogStringToJson(String log){
-
         JsonObject json = new JsonObject();
-        String[] logParts = log.split("|");
+        String[] logParts = log.split("\\|");
+
+        for(String s : logParts){
+            System.out.println("=======================" + s);
+            System.out.println("JAN: einzelne Parts des LogStrings" + s);
+        }
 
         json.addProperty("id", logParts[0]);
         json.addProperty("ts", logParts[1]);
