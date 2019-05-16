@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         CommandSet startDictationCommandSet = new CommandSet("Start with Dictation", "By using this command, you will start dictating");
         startDictationCommandSet.createCommand("startElias", "Ok Elias", "", "Start with Dictation");
         startDictationCommandSet.createCommand("stopElias", "Stop Elias", "", "Stop with Dictation");
+        startDictationCommandSet.createCommand("stopElias1", "Stopp Elias", "", "Stop with Dictation");
 
         startDictationCommandSet.createCommand("background", "Hintergrundfarbe", "", "Changes background color");
         startDictationCommandSet.createCommand("background2", "Couleur de fond", "", "Changes background color");
@@ -282,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
                 isDictatingDone = false;
                 v.vibrate(600);
                 break;
+            case "stopElias1":
             case "stopElias":
                 spokenText.append(":");
 
