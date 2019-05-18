@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     private VuiController theVuiController;
 
-    private boolean recording_flag = false;
     private boolean dayMode = true;
     private LinearLayout background;
     private EditText spokenText;
@@ -57,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         setContentView(R.layout.activity_main);
         context = this;
 
+        //Test: First clear the backup log to have a stable state at beginning
+        new TCPSender(this).clearBackUpLog();
+
 //        startWiFiCheckerService();
         openWiFiDiscovery();
 
@@ -67,12 +69,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         configNuance();
 
         setDate();
-
-        if ((savedInstanceState != null) && (savedInstanceState.containsKey("recording"))) {
-            recording_flag = savedInstanceState.getBoolean("recording");
-        }
-
-        this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
     }
 
     /**
@@ -91,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     }
 
     private void openTCPConnection(final String finalText){
-        System.out.println("JAN: openTCPConnection() started");
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -99,14 +94,11 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
                     Socket s = new Socket(ip, port);
                     tcps = new TCPSender(s, context);
                     tcps.setSpokenText(finalText);
-                    System.out.println("JAN: openTCPConnection() before execute()");
                     tcps.execute();
                 } catch (IOException e) {
-                    System.out.println("JAN: openTCPConnection() IOException before TCPSender Creation");
                     tcps = new TCPSender(context);
                     tcps.setSpokenText(finalText);
                     String payload = tcps.getPayload();
-                    System.out.println("JAN: openTCPCOnnection: Backup Payload: " + payload);
                     tcps.writeToBackupLogFile(payload);
                     e.printStackTrace();
                 }
@@ -214,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     @Override
     protected void onStart() {
         Session.getSharedSession().addSessionEventListener(this);
+        this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         super.onStart();
     }
 
@@ -228,6 +221,12 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     protected void onStop() {
         Session.getSharedSession().removeSessionEventListener(this);
         super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        this.unregisterReceiver(this.mBatInfoReceiver);
+        super.onPause();
     }
 
     @Override
@@ -256,12 +255,11 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onProcessingStarted(View view) {
-        recording_flag = true;
+
     }
 
     @Override
     public void onProcessingFinished(View view) {
-        recording_flag = false;
 
         if(isDictatingActive){
             String currEditTextContent = spokenText.getText().toString();

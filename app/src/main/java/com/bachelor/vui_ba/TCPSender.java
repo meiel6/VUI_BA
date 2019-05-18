@@ -35,6 +35,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private DataOutputStream dos;
     private static int currentId = 0;
     private Context context;
+    private static boolean wasDisconnected = false;
 
     //Logging
     private File appDirectory;
@@ -75,28 +76,32 @@ public class TCPSender extends AsyncTask<String, Void, String> {
             dos = new DataOutputStream(s.getOutputStream());
 
             if(backupLog.length() != 0){
-                System.out.println("JAN: Check --> Backup length is bigger than 0!");
+
+                if(wasDisconnected){
+                    MainActivity.openWiFiDiscovery();
+                }
+
                 String[] logList = readBackupLog();
-                for(int i = 0; i <= logList.length; ++i){
+
+                for(int i = 0; i <= logList.length - 1; ++i){
                     String backupPayload = invertLogStringToJson(logList[i]);
-                    System.out.println("JAN: doInBackground in Backup Loop " + backupPayload);
                     dos.writeUTF(backupPayload);
                     writeToStandardLogFile(backupPayload);
                 }
+                dos.writeUTF(payload);
                 clearBackUpLog();
             } else {
-                System.out.println("JAN: Write --> Normal transmission!");
                 dos.writeUTF(payload);
                 writeToStandardLogFile(payload);
-                dos.close();
             }
+
+            dos.flush();
             dos.close();
             s.close();
 
             return payload;
 
         } catch (Exception e) {
-            System.out.println("JAN: Exception --> No Internet!");
             writeToBackupLogFile(payload);
             e.printStackTrace();
             return null;
@@ -106,9 +111,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String payload) {
         super.onPostExecute(payload);
-//        if(payload != null){
-//            writeToStandardLogFile(payload);
-//        }
     }
 
     public void setSpokenText(String text){
@@ -208,6 +210,8 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      */
     public void writeToBackupLogFile(String payload){
         try {
+            wasDisconnected = true;
+
             fos = new FileOutputStream(backupLog, true);
             incrementId();
             fos.write(buildLogString(payload).getBytes());
@@ -292,11 +296,6 @@ public class TCPSender extends AsyncTask<String, Void, String> {
         JsonObject json = new JsonObject();
         String[] logParts = log.split("\\|");
 
-        for(String s : logParts){
-            System.out.println("=======================" + s);
-            System.out.println("JAN: einzelne Parts des LogStrings" + s);
-        }
-
         json.addProperty("id", logParts[0]);
         json.addProperty("ts", logParts[1]);
         json.addProperty("comp", logParts[2]);
@@ -308,7 +307,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     /**
      * Deletes all entries from the backup file.
      */
-    private void clearBackUpLog(){
+    public void clearBackUpLog(){
         try {
             new PrintWriter(backupLog).close();
         } catch (FileNotFoundException e) {
