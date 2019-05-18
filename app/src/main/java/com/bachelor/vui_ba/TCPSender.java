@@ -137,6 +137,8 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      */
     private JsonObject createJson(){
 
+        spokenText = spokenText.toLowerCase();
+
         JsonObject json = new JsonObject();
         json.addProperty("id", currentId);
         json.addProperty("ts", System.currentTimeMillis());
@@ -153,22 +155,20 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private String getComponent(){
         String component = null;
 
-        if(spokenText.contains("Anamnese") || spokenText.contains("Anamnèse") || spokenText.contains("anamnèse")) {
+        if(spokenText.contains("anamnese") || spokenText.contains("anamnèse")) {
             component = "Anamnese";
-        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("glasgow") || spokenText.contains("Coma") || spokenText.contains("coma")) {
+        } else if(spokenText.contains("gcs") || spokenText.contains("glasgow") || spokenText.contains("coma")) {
             component = "GCS";
-        } else if(spokenText.contains("Lagerung")) {
-            component = "Lagerung";
-        } else if(spokenText.contains("Puls") || spokenText.contains("Pouls") || spokenText.contains("pouls") || spokenText.contains("Battement") || spokenText.contains("battement")) {
+        } else if(spokenText.contains("puls") || spokenText.contains("pouls") || spokenText.contains("battement")) {
             component = "Puls";
-        } else if(spokenText.contains("Blutdruck") || spokenText.contains("tension artérielle") || spokenText.contains("Tension artérielle")) {
+        } else if(spokenText.contains("blutdruck") || spokenText.contains("tension artérielle")) {
             component = "Blutdruck";
-        } else if(spokenText.contains("Medikament") || spokenText.contains("Drogue") || spokenText.contains("drogue") || spokenText.contains("Médicament") || spokenText.contains("médicament")
-                || spokenText.contains("Adrenalin") || spokenText.contains("Adrénaline") || spokenText.contains("adrénaline")
-                || spokenText.contains("Glukose") || spokenText.contains("Glucose") || spokenText.contains("glucose")
-                || spokenText.contains("Fentanyl") || spokenText.contains("fentanyl")) {
+        } else if(spokenText.contains("medikament") || spokenText.contains("drogue") || spokenText.contains("médicament")
+                || spokenText.contains("adrenalin") || spokenText.contains("adrénaline")
+                || spokenText.contains("glukose") || spokenText.contains("glucose")
+                || spokenText.contains("fentanyl")) {
             component = "Medikament";
-        } else if(spokenText.contains("Dokumentation") || spokenText.contains("Documentation")){
+        } else if(spokenText.contains("dokumentation") || spokenText.contains("documentation")){
             component = "Dokumentation";
         }
 
