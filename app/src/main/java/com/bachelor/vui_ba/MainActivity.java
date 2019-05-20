@@ -26,6 +26,10 @@ import java.net.Socket;
 import java.util.Calendar;
 import java.util.HashMap;
 
+/**
+ * This Class represents the entry point of this Android-Application ELIAS. It handles the
+ * User-Input via the voice-recognition software Nuance Dragon Medical SpeechKit and de UI.
+ */
 public class MainActivity extends AppCompatActivity implements SessionEventListener, VuiControllerEventListener {
 
     private VuiController theVuiController;
@@ -56,10 +60,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         setContentView(R.layout.activity_main);
         context = this;
 
-        //Test: First clear the backup log to have a stable state at beginning
         new TCPSender(this).clearBackUpLog();
 
-//        startWiFiCheckerService();
         openWiFiDiscovery();
 
         init();
@@ -77,13 +79,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
      */
     public static void openWiFiDiscovery(){
         wsd = new WiFiServiceDiscovery(context);
-    }
-
-    /**
-     * Creates a background service that checks the wifi state of the user device.
-     */
-    private void startWiFiCheckerService(){
-        startService(new Intent(this, WiFiCheckerService.class));
     }
 
     private void openTCPConnection(final String finalText){
@@ -260,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onProcessingFinished(View view) {
-
         if(isDictatingActive){
             String currEditTextContent = spokenText.getText().toString();
             startIndex = currEditTextContent.indexOf(";");
@@ -280,7 +274,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
-
         switch(s){
             case "startElias":
                 spokenText.append(";");

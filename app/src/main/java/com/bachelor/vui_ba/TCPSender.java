@@ -24,9 +24,9 @@ import java.util.ArrayList;
 /**
  * This Class is used to send TCP-Messages to the ePatientenprotokoll. It also logs all the commands
  * to two different log files (Standard and Backup). If no connection is available to the
- * ePatienteprotokoll, the VUI loggs all commands in the backup-log. If the connection is active
+ * ePatienteprotokoll, the VUI logs all commands in the backup-log. If the connection is active
  * again, the delta between backup-log and standard-log (with all the commands) will be send to the
- * ePatienteprotokoll.
+ * ePatienteprotokoll. Additionally, it creates the Json-String (Payload to the ePatientenprotokoll) in the correct format.
  */
 public class TCPSender extends AsyncTask<String, Void, String> {
 
@@ -113,6 +113,10 @@ public class TCPSender extends AsyncTask<String, Void, String> {
         super.onPostExecute(payload);
     }
 
+    /**
+     * Sets the text, spoken by the user, to the variable "spokenText" to use it in this Class.
+     * @param text
+     */
     public void setSpokenText(String text){
         spokenText = text;
     }
