@@ -26,11 +26,14 @@ import java.net.Socket;
 import java.util.Calendar;
 import java.util.HashMap;
 
+/**
+ * This Class represents the entry point of this Android-Application ELIAS. It handles the
+ * User-Input via the voice-recognition software Nuance Dragon Medical SpeechKit and de UI.
+ */
 public class MainActivity extends AppCompatActivity implements SessionEventListener, VuiControllerEventListener {
 
     private VuiController theVuiController;
 
-    private boolean recording_flag = false;
     private boolean dayMode = true;
     private LinearLayout background;
     private EditText spokenText;
@@ -57,7 +60,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         setContentView(R.layout.activity_main);
         context = this;
 
-//        startWiFiCheckerService();
+        new TCPSender(this).clearBackUpLog();
+
         openWiFiDiscovery();
 
         init();
@@ -67,12 +71,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         configNuance();
 
         setDate();
-
-        if ((savedInstanceState != null) && (savedInstanceState.containsKey("recording"))) {
-            recording_flag = savedInstanceState.getBoolean("recording");
-        }
-
-        this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
     }
 
     /**
@@ -83,28 +81,24 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
         wsd = new WiFiServiceDiscovery(context);
     }
 
-    /**
-     * Creates a background service that checks the wifi state of the user device.
-     */
-    private void startWiFiCheckerService(){
-        startService(new Intent(this, WiFiCheckerService.class));
-    }
-
     private void openTCPConnection(final String finalText){
-        //tcps = new TCPSender(ip, port, this.getApplicationContext());
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Socket s = new Socket(ip, port);
-                        tcps = new TCPSender(s, context);
-                        tcps.setSpokenText(finalText);
-                        tcps.execute();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket s = new Socket(ip, port);
+                    tcps = new TCPSender(s, context);
+                    tcps.setSpokenText(finalText);
+                    tcps.execute();
+                } catch (IOException e) {
+                    tcps = new TCPSender(context);
+                    tcps.setSpokenText(finalText);
+                    String payload = tcps.getPayload();
+                    tcps.writeToBackupLogFile(payload);
+                    e.printStackTrace();
                 }
-            });
+            }
+        });
         thread.start();
     }
 
@@ -207,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     @Override
     protected void onStart() {
         Session.getSharedSession().addSessionEventListener(this);
+        this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         super.onStart();
     }
 
@@ -221,6 +216,12 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
     protected void onStop() {
         Session.getSharedSession().removeSessionEventListener(this);
         super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        this.unregisterReceiver(this.mBatInfoReceiver);
+        super.onPause();
     }
 
     @Override
@@ -249,13 +250,11 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onProcessingStarted(View view) {
-        recording_flag = true;
+
     }
 
     @Override
     public void onProcessingFinished(View view) {
-        recording_flag = false;
-
         if(isDictatingActive){
             String currEditTextContent = spokenText.getText().toString();
             startIndex = currEditTextContent.indexOf(";");
@@ -275,7 +274,6 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
 
     @Override
     public void onCommandRecognized(String s, String s1, String s2, HashMap<String, String> hashMap) {
-
         switch(s){
             case "startElias":
                 spokenText.append(";");
@@ -368,13 +366,7 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
      * Sends the finaltext, which holds the whole dictate phrase of the user, via TCP-Connection to the ePatientenprotokoll.
      */
     private void sendToProtocol(){
-//        this.ip = wsd.getDiscoveredIp();
-//        this.port = wsd.getDiscoveredPort();
         openTCPConnection(finalText);
-
-        //TCPSender tcps = new TCPSender(ip, port, this.getApplicationContext());
-//        tcps.setSpokenText(finalText);
-//        tcps.execute();
     }
 
     /**

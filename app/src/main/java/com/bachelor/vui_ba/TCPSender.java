@@ -24,19 +24,18 @@ import java.util.ArrayList;
 /**
  * This Class is used to send TCP-Messages to the ePatientenprotokoll. It also logs all the commands
  * to two different log files (Standard and Backup). If no connection is available to the
- * ePatienteprotokoll, the VUI loggs all commands in the backup-log. If the connection is active
+ * ePatienteprotokoll, the VUI logs all commands in the backup-log. If the connection is active
  * again, the delta between backup-log and standard-log (with all the commands) will be send to the
- * ePatienteprotokoll.
+ * ePatienteprotokoll. Additionally, it creates the Json-String (Payload to the ePatientenprotokoll) in the correct format.
  */
 public class TCPSender extends AsyncTask<String, Void, String> {
 
     //Connection
     private Socket s;
     private DataOutputStream dos;
-    private String ip_address;
-    private int port;
     private static int currentId = 0;
     private Context context;
+    private static boolean wasDisconnected = false;
 
     //Logging
     private File appDirectory;
@@ -47,18 +46,15 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     //Payload
     private String spokenText = "";
 
-//    public TCPSender(String ip, int port, Context ctx){
-//        this.ip_address = ip;
-//        this.port = port;
-//        this.context = ctx;
-//
-//        initLoggingDirectories();
-//    }
-
     public TCPSender(Socket socket, Context ctx){
         this.s = socket;
         this.context = ctx;
 
+        initLoggingDirectories();
+    }
+
+    public TCPSender(Context ctx){
+        this.context = ctx;
         initLoggingDirectories();
     }
 
@@ -77,22 +73,29 @@ public class TCPSender extends AsyncTask<String, Void, String> {
         String payload = getPayload();
 
         try {
-            //s = new Socket(ip_address, port);
-
             dos = new DataOutputStream(s.getOutputStream());
 
             if(backupLog.length() != 0){
+
+                if(wasDisconnected){
+                    MainActivity.openWiFiDiscovery();
+                }
+
                 String[] logList = readBackupLog();
-                for(int i = 0; i < logList.length; ++i){
+
+                for(int i = 0; i <= logList.length - 1; ++i){
                     String backupPayload = invertLogStringToJson(logList[i]);
                     dos.writeUTF(backupPayload);
                     writeToStandardLogFile(backupPayload);
                 }
+                dos.writeUTF(payload);
                 clearBackUpLog();
             } else {
                 dos.writeUTF(payload);
+                writeToStandardLogFile(payload);
             }
 
+            dos.flush();
             dos.close();
             s.close();
 
@@ -108,11 +111,12 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String payload) {
         super.onPostExecute(payload);
-        if(payload != null){
-            writeToStandardLogFile(payload);
-        }
     }
 
+    /**
+     * Sets the text, spoken by the user, to the variable "spokenText" to use it in this Class.
+     * @param text
+     */
     public void setSpokenText(String text){
         spokenText = text;
     }
@@ -121,7 +125,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      * This method returns the Json Object in a string representation.
      * @return String of the Json Object
      */
-    private String getPayload(){
+    public String getPayload(){
         return createJson().toString();
     }
 
@@ -136,6 +140,8 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      * @return JsonObject as Payload
      */
     private JsonObject createJson(){
+
+        spokenText = spokenText.toLowerCase();
 
         JsonObject json = new JsonObject();
         json.addProperty("id", currentId);
@@ -153,22 +159,20 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     private String getComponent(){
         String component = null;
 
-        if(spokenText.contains("Anamnese") || spokenText.contains("Anamnèse") || spokenText.contains("anamnèse")) {
+        if(spokenText.contains("anamnese") || spokenText.contains("anamnèse")) {
             component = "Anamnese";
-        } else if(spokenText.contains("GCS") || spokenText.contains("Glasgow") || spokenText.contains("glasgow") || spokenText.contains("Coma") || spokenText.contains("coma")) {
+        } else if(spokenText.contains("gcs") || spokenText.contains("glasgow") || spokenText.contains("coma")) {
             component = "GCS";
-        } else if(spokenText.contains("Lagerung")) {
-            component = "Lagerung";
-        } else if(spokenText.contains("Puls") || spokenText.contains("Pouls") || spokenText.contains("pouls") || spokenText.contains("Battement") || spokenText.contains("battement")) {
+        } else if(spokenText.contains("puls") || spokenText.contains("pouls") || spokenText.contains("battement")) {
             component = "Puls";
-        } else if(spokenText.contains("Blutdruck") || spokenText.contains("tension artérielle") || spokenText.contains("Tension artérielle")) {
+        } else if(spokenText.contains("blutdruck") || spokenText.contains("tension artérielle")) {
             component = "Blutdruck";
-        } else if(spokenText.contains("Medikament") || spokenText.contains("Drogue") || spokenText.contains("drogue") || spokenText.contains("Médicament") || spokenText.contains("médicament")
-                || spokenText.contains("Adrenalin") || spokenText.contains("Adrénaline") || spokenText.contains("adrénaline")
-                || spokenText.contains("Glukose") || spokenText.contains("Glucose") || spokenText.contains("glucose")
-                || spokenText.contains("Fentanyl") || spokenText.contains("fentanyl")) {
+        } else if(spokenText.contains("medikament") || spokenText.contains("drogue") || spokenText.contains("médicament")
+                || spokenText.contains("adrenalin") || spokenText.contains("adrénaline")
+                || spokenText.contains("glukose") || spokenText.contains("glucose")
+                || spokenText.contains("fentanyl")) {
             component = "Medikament";
-        } else if(spokenText.contains("Dokumentation") || spokenText.contains("Documentation")){
+        } else if(spokenText.contains("dokumentation") || spokenText.contains("documentation")){
             component = "Dokumentation";
         }
 
@@ -208,8 +212,10 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      *
      * @param payload - the spoken text
      */
-    private void writeToBackupLogFile(String payload){
+    public void writeToBackupLogFile(String payload){
         try {
+            wasDisconnected = true;
+
             fos = new FileOutputStream(backupLog, true);
             incrementId();
             fos.write(buildLogString(payload).getBytes());
@@ -291,9 +297,8 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      * @return Log in json as a String
      */
     private String invertLogStringToJson(String log){
-
         JsonObject json = new JsonObject();
-        String[] logParts = log.split("|");
+        String[] logParts = log.split("\\|");
 
         json.addProperty("id", logParts[0]);
         json.addProperty("ts", logParts[1]);
@@ -306,7 +311,7 @@ public class TCPSender extends AsyncTask<String, Void, String> {
     /**
      * Deletes all entries from the backup file.
      */
-    private void clearBackUpLog(){
+    public void clearBackUpLog(){
         try {
             new PrintWriter(backupLog).close();
         } catch (FileNotFoundException e) {
