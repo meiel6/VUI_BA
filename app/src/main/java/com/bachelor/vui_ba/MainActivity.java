@@ -302,8 +302,8 @@ public class MainActivity extends AppCompatActivity implements SessionEventListe
                     dayMode = false;
                 } else {
                     background.setBackgroundColor(0x00000000);
-                    dictatedText.setTextColor(getResources().getColor(R.color.black));
-                    spokenText.setTextColor(getResources().getColor(R.color.darkGrey));
+                    dictatedText.setTextColor(getResources().getColor(R.color.darkGrey));
+                    spokenText.setTextColor(getResources().getColor(R.color.black));
                     dayMode = true;
                 }
                 break;
