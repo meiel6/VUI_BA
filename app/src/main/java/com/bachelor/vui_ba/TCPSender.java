@@ -140,17 +140,13 @@ public class TCPSender extends AsyncTask<String, Void, String> {
      * @return JsonObject as Payload
      */
     private JsonObject createJson(){
+        spokenText = spokenText.toLowerCase();
 
         JsonObject json = new JsonObject();
         json.addProperty("id", currentId);
         json.addProperty("ts", System.currentTimeMillis());
 
-        String comp = getComponent() != null ? getComponent() : "";
-        if(!comp.equals("Anamnese")){
-            spokenText = spokenText.toLowerCase();
-        }
-
-        json.addProperty("comp", spokenText);
+        json.addProperty("comp", getComponent() != null ? getComponent() : "");
         json.addProperty("payload", spokenText);
 
         return json;
